@@ -1,47 +1,134 @@
-<build>
-    <plugins>
-        <plugin>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-codegen-plugin</artifactId>
-            <version>3.5.5</version>
-            <executions>
-                <execution>
-                    <id>generate-sources</id>
-                    <phase>generate-sources</phase>
-                    <goals>
-                        <goal>wsdl2java</goal>
-                    </goals>
-                </execution>
-            </executions>
-            <configuration>
-                <sourceRoot>${project.build.directory}/generated-sources/wsdl</sourceRoot>
-                <wsdlOptions>
-                    <wsdlOption>
-                        <wsdl>${project.basedir}/src/main/resources/service.wsdl</wsdl> <!-- Atualize o caminho para o WSDL -->
-                    </wsdlOption>
-                </wsdlOptions>
-            </configuration>
-        </plugin>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-        <!-- Plugin para empacotar as classes geradas em um JAR -->
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <version>3.1.0</version>
-            <executions>
-                <execution>
-                    <id>default-jar</id>
-                    <goals>
-                        <goal>jar</goal>
-                    </goals>
-                    <phase>package</phase>
-                    <configuration>
-                        <classesDirectory>${project.build.directory}/generated-sources/wsdl</classesDirectory>
-                        <outputDirectory>${project.basedir}/wsdl-client-lib</outputDirectory>
-                        <finalName>wsdl-client</finalName>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
+    <groupId>com.seuprojeto</groupId>
+    <artifactId>wsdl-client</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <!-- Configuração para Java 17 -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <!-- Apache CXF para gerar as classes WSDL -->
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxws</artifactId>
+            <version>3.5.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-http</artifactId>
+            <version>3.5.5</version>
+        </dependency>
+
+        <!-- Jakarta JAXB para compatibilidade com Java 17 -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Plugin CXF para gerar as classes a partir do WSDL -->
+            <plugin>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-codegen-plugin</artifactId>
+                <version>3.5.5</version>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>wsdl2java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceRoot>${project.build.directory}/generated-sources/wsdl</sourceRoot>
+                    <wsdlOptions>
+                        <wsdlOption>
+                            <wsdl>${project.basedir}/src/main/resources/service.wsdl</wsdl> <!-- Certifique-se de que o WSDL está no caminho correto -->
+                        </wsdlOption>
+                    </wsdlOptions>
+                </configuration>
+            </plugin>
+
+            <!-- Plugin para empacotar as classes geradas em um JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classesDirectory>${project.build.directory}/generated-sources/wsdl</classesDirectory>
+                            <outputDirectory>${project.basedir}/wsdl-client-lib</outputDirectory>
+                            <finalName>wsdl-client</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Plugin para instalar os artefatos no repositório local -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <executions>
+                    <execution>
+                        <id>install-artifacts</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Plugin para publicar os artefatos em um repositório remoto (opcional) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <executions>
+                    <execution>
+                        <id>default-deploy</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <repositoryId>your-repository-id</repositoryId>
+                    <url>https://your-repository-url</url> <!-- Coloque aqui o URL do seu repositório remoto -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <distributionManagement>
+        <repository>
+            <id>your-repository-id</id>
+            <url>https://your-repository-url</url> <!-- Coloque o URL do repositório remoto -->
+        </repository>
+    </distributionManagement>
+</project>
